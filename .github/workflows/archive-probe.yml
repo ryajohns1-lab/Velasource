@@ -1,0 +1,14 @@
+name: Probe licensed Internet Archive provider
+on:
+  push:
+    paths: [scripts/probe-archive.mjs, .github/workflows/archive-probe.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - run: node scripts/probe-archive.mjs
