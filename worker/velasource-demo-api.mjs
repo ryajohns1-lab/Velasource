@@ -158,9 +158,9 @@ export default {
     if(url.pathname==="/syncler/express/manifest" || url.pathname==="/syncler/express/manifest/")return sendJson(V5_MANIFEST);
     if(url.pathname==="/syncler/express" || url.pathname==="/syncler/express/")return sendJson(V5_DEFINITION);
     if(url.pathname==="/syncler/v6/vendor" || url.pathname==="/syncler/v6/vendor/")return sendJson(V6_VENDOR);
-    if(url.pathname==="/syncler/v6/manifest")return sendJson(V6_MANIFEST);
-    if(url.pathname==="/syncler/v6/express")return sendJson(V6_DEFINITION);
-    if(url.pathname==="/v6/search")return handleArchiveSearch(url);
+    if(url.pathname==="/syncler/v6/manifest" || url.pathname==="/syncler/v6/manifest/")return sendJson(V6_MANIFEST);
+    if(url.pathname==="/syncler/v6/express" || url.pathname==="/syncler/v6/express/")return sendJson(V6_DEFINITION);
+    if(url.pathname==="/v6/search" || url.pathname==="/v6/search/")return handleArchiveSearch(url);
     if(url.pathname==="/search" || url.pathname==="/v1/express/search"){
       const kind=url.searchParams.get("kind")||"movie";
       const title=normalize(url.searchParams.get("title")||"");
