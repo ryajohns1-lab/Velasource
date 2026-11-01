@@ -6,9 +6,9 @@ A standalone movie/episode search engine prototype with a Syncler **Express JSON
 
 Enter this in **Settings → Vendors**:
 
-`https://raw.githubusercontent.com/ryajohns1-lab/Velasource/main/manifest.vendor.json`
+`https://raw.githubusercontent.com/ryajohns1-lab/Velasource/main/vendor-v3.json`
 
-Choose **Check vendor URL** and **Import VelaSource Express Adapter**. See [test steps and limitations](docs/OVRELIXA_ADAPTER.md).
+Choose **Check vendor URL** and **Import VelaSource Express Adapter v3**. See [test steps and limitations](docs/OVRELIXA_ADAPTER.md).
 
 ## Current test status
 

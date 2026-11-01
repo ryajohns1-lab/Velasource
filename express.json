@@ -2,10 +2,10 @@
   "_manifest": {
     "name": "VelaSource Express Adapter",
     "id": "community.velasource.express",
-    "version": 2
+    "version": 3
   },
   "velasource": {
-    "name": "VelaSource Search (licensed smoke test)",
+    "name": "VelaSource v3 · Licensed demo search",
     "enabled": true,
     "base_url": "https://velasource-demo-api.ryajohns1.workers.dev/",
     "response_type": "json",

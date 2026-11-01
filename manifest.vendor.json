@@ -1,11 +1,11 @@
 {
-  "name": "VelaSource",
-  "description": "Independent VelaSource search engine. Express adapter test: one CC BY 3.0 film; full source engine is separate.",
+  "name": "VelaSource v3",
+  "description": "Licensed test film adapter; versioned URLs prevent old package-definition caches from hiding results.",
   "packages": [
     {
-      "name": "VelaSource Express Adapter",
-      "description": "Search bridge for Ovrelixa Vendors. Licensed Big Buck Bunny smoke test; no other live providers yet.",
-      "manifest": "https://raw.githubusercontent.com/ryajohns1-lab/Velasource/main/manifest.package.json"
+      "name": "VelaSource Express Adapter v3",
+      "description": "New version-specific URL bypasses stale v1/v2 demo definitions; tests the Big Buck Bunny result.",
+      "manifest": "https://raw.githubusercontent.com/ryajohns1-lab/Velasource/main/package-v3.json"
     }
   ]
 }

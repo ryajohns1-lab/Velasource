@@ -1,0 +1,28 @@
+{
+  "_manifest": {
+    "name": "VelaSource Express Adapter",
+    "id": "community.velasource.express",
+    "version": 3
+  },
+  "velasource": {
+    "name": "VelaSource v3 · Licensed demo search",
+    "enabled": true,
+    "base_url": "https://velasource-demo-api.ryajohns1.workers.dev/",
+    "response_type": "json",
+    "movie": {
+      "query": "search?kind=movie&title={query}&year={year}&imdbId={imdbId}",
+      "keywords": "{title}"
+    },
+    "episode": {
+      "query": "search?kind=episode&title={query}&season={season}&episode={episode}",
+      "keywords": "{title}"
+    },
+    "json_format": {
+      "results": "results",
+      "title": "title",
+      "url": "url",
+      "size": "sizeBytes",
+      "seeds": "seeds"
+    }
+  }
+}

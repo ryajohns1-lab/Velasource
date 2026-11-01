@@ -1,7 +1,7 @@
 {
-  "name": "VelaSource Express Adapter",
+  "name": "VelaSource Express Adapter v3",
   "id": "community.velasource.express",
-  "version": 2,
+  "version": 3,
   "type": "express",
-  "url": "https://raw.githubusercontent.com/ryajohns1-lab/Velasource/main/express.json"
+  "url": "https://raw.githubusercontent.com/ryajohns1-lab/Velasource/main/express-v3.json"
 }
