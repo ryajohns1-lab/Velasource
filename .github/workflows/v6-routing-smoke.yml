@@ -1,0 +1,21 @@
+name: VelaSource v6 route and import check
+
+on:
+  push:
+    paths:
+      - worker/velasource-demo-api.mjs
+      - scripts/check-v6-routes.mjs
+      - .github/workflows/v6-routing-smoke.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  route-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check v6 catalog, manifest and definition with and without final slash
+        run: node scripts/check-v6-routes.mjs
