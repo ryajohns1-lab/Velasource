@@ -1,10 +1,10 @@
 {
-  "name": "VelaSource - Vendor",
-  "description": "JakedUp-compatible v5 hosted Express format; licensed sample test only.",
+  "name": "VelaSource v6 — Licensed Archive",
+  "description": "Current catalog: independent Internet Archive movie search with explicit license checks.",
   "packages": [
     {
-      "manifest": "https://velasource-demo-api.ryajohns1.workers.dev/syncler/express/manifest",
-      "description": "VelaSource v5 Express provider"
+      "manifest": "https://velasource-demo-api.ryajohns1.workers.dev/syncler/v6/manifest",
+      "description": "VelaSource Archive Express v6 (licensed movies)"
     }
   ]
 }

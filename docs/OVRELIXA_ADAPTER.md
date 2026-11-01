@@ -1,23 +1,26 @@
-# VelaSource v5 — JakedUp-compatible Express package
+# VelaSource v6 adapter — live licensed movie catalog
 
-**No Ovrelixa changes.** This adapter is independently deployed in Cloudflare.
+**Purpose:** a separate test environment to prove that Ovrelixa can load an independently hosted Express package backed by real external movie catalog searches. Ovrelixa is unchanged.
 
-## Background
+## Import
 
-The iPhone imported v3 and v4 but reported `Package manifest: error (Cannot load Express definition)`. That error comes from Ovrelixa attempting to retrieve and parse the provider definition, *before* searching and before Premiumize cache checks.
+Enter `https://velasource-demo-api.ryajohns1.workers.dev/syncler/v6/vendor/` in **Settings → Vendors**, then check and import the **VelaSource — Archive Express v6** package. Select Vendors as the active search source. To see positive test results, search *Sintel (2010)*, *Big Buck Bunny (2008)* or *Elephants Dream (2006)*. Tap Diagnostics to inspect returned candidates.
 
-The v3 definition used GitHub Raw and the v4 definition used a one-file inline `_manifest` shortcut. The v5 experiment follows the observed live JakedUp endpoints and metadata fields precisely:
+## Architecture
 
-| Stage | JakedUp | VelaSource v5 |
-|---|---|---|
-| Vendor catalog | `/syncler/vendor` | `https://velasource-demo-api.ryajohns1.workers.dev/syncler/vendor/` |
-| Express manifest | `/syncler/express/manifest` | `https://velasource-demo-api.ryajohns1.workers.dev/syncler/express/manifest` |
-| Provider definition | `/syncler/express` | `https://velasource-demo-api.ryajohns1.workers.dev/syncler/express` |
+VelaSource v6 is hosted as a Cloudflare Worker. It exposes a three-step Express package flow matching JakedUp's verified public format: catalog → manifest (`classPath`, `permaUrl`, `type:express`) → provider rules. The rules point to the separate `/v6/search` endpoint. We confirmed every step from a separate GitHub Actions runner.
 
-VelaSource's Express manifest includes `name`, `id`, `version:5`, `classPath:""`, `permaUrl`, and `type:"express"`. Its `permaUrl` serves the `_manifest` + `velasource` rule object. All URLs are HTTPS and hosted on the same Cloudflare origin.
+The search is restricted to Archive movie items with explicit CC/public-domain license metadata. Film title and year must match within a bounded confidence threshold, known resolution/codec suffixes are removed for comparisons, and the selected item metadata must contain a real video file. Queries are limited, parallel metadata requests have timeouts, and successful queries are cached briefly.
 
-## Test
+**Important:** Archive licensing information is uploader-provided metadata, not a legal certification. This connector is for authorized/public media and should not be used to imply rights to distribute third-party files.
 
-Remove the old v4 adapter, install `https://velasource-demo-api.ryajohns1.workers.dev/syncler/vendor/`, select Vendors and search for *Big Buck Bunny (2008)*. Open Diagnostics. If there is one `found` candidate but zero cached, the adapter is working and the remaining behavior is Ovrelixa's Premiumize-only filter. If the same definition error remains, the next useful evidence is the specific iOS fetch/HTTP failure; do not bypass security restrictions or change Ovrelixa solely for this smoke test.
+## Source eligibility
 
-[View independent API test](https://github.com/ryajohns1-lab/Velasource/actions/runs/41332037445). Only the freely licensed *Big Buck Bunny* (2008; © Blender Foundation, CC BY 3.0) is returned.
+Ovrelixa's existing Premiumize-only policy stays in place. Its source picker may display **0 streams even when Diagnostics says 1–3 returned candidates** because a normal HTTPS Archive file is not necessarily Premiumize-cached. Do not change or bypass this behavior for a test.
+
+## Test record
+
+- GitHub Actions v6 external integration run [41333003683](https://github.com/ryajohns1-lab/Velasource/actions/runs/41333003683), attempt 3: success.
+- Test titles: Sintel, Big Buck Bunny, Elephants Dream; three candidates each at test time.
+- v5 one-film demo remains available; v6 does not change v5 routes.
+- Standalone Node v0.3 ZIP: separate artifact with 21 passing local tests, and pluggable authorized remote JSON endpoints. It is not currently deployed.
