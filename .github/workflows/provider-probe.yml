@@ -1,0 +1,19 @@
+name: Probe authorized catalog providers
+
+on:
+  push:
+    paths:
+      - scripts/probe-providers.mjs
+      - .github/workflows/provider-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - run: node scripts/probe-providers.mjs
