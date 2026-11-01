@@ -4,7 +4,7 @@
 import assert from 'node:assert/strict';
 const origin='https://velasource-demo-api.ryajohns1.workers.dev';
 async function readJson(url, expectedType = true) {
-  const result=await fetch(url,{signal:AbortSignal.timeout(15000),headers:{accept:'application/json,text/plain;q=0.9'}});
+  const result=await fetch(url,{signal:AbortSignal.timeout(15000),headers:{accept:'application/json,text/html;q=0.9'}});
   const body=await result.text();
   assert.equal(result.status,200,`GET ${url}: HTTP ${result.status}: ${body.slice(0,300)}`);
   if(expectedType) assert.match(result.headers.get('content-type')??'',/application\/json/);
@@ -12,6 +12,25 @@ async function readJson(url, expectedType = true) {
   try { parsed=JSON.parse(body); } catch(e) { throw new Error(`Invalid JSON at ${url}: ${body.slice(0,300)}`); }
   return parsed;
 }
+// Follow the same JakedUp legacy-Express chain as the Ovrelixa importer:
+const classicVendor=await readJson(origin+'/syncler/vendor');
+assert.equal(classicVendor.packages.length,1);
+const classicManifest=await readJson(classicVendor.packages[0].manifest);
+assert.equal(classicManifest.type,'express');
+assert.equal(classicManifest.version,5);
+assert.equal(classicManifest.classPath,'');
+assert.equal(classicManifest.permaUrl,origin+'/syncler/express');
+assert.equal(Object.hasOwn(classicManifest,'url'),false);
+const classicDefinition=await readJson(classicManifest.permaUrl);
+assert.equal(classicDefinition._manifest.version,5);
+assert.equal(classicDefinition.velasource.response_type,'json');
+assert.equal(classicDefinition.velasource.base_url,origin+'/');
+assert.equal(classicDefinition.velasource.json_format.results,'results');
+assert.equal(classicDefinition.velasource.json_format.title,'title');
+assert.equal(classicDefinition.velasource.json_format.url,'url');
+const classicFilm=await readJson(origin+'/search?kind=movie&title=Big%20Buck%20Bunny');
+assert.equal(classicFilm.results.length,1);
+console.log('PASS: JakedUp-style v5 vendor -> Express manifest -> Express provider definition -> licensed search');
 const health=await readJson(origin+'/health');
 assert.equal(health.ok,true);
 assert.equal(health.version,4);
