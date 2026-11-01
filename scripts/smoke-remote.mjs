@@ -19,6 +19,13 @@ assert.match(matching.results[0].title,/Big Buck Bunny/i);
 assert.match(matching.results[0].url,/^https:\/\//);
 const elsewhere=await get(root+'/search?kind=movie&title=Wildwood&year=2026');
 assert.equal(elsewhere.count,0,`Test provider must not give unrelated titles: ${JSON.stringify(elsewhere)}`);
+const raw='https://raw.githubusercontent.com/ryajohns1-lab/Velasource/main';
+for (const name of ['vendor-v3.json','package-v3.json','express-v3.json']) {
+  const remote=await get(raw+'/'+name);
+  const local=JSON.parse(readFileSync(name,'utf8'));
+  assert.deepEqual(remote,local,`Published GitHub JSON differs from local for ${name}`);
+  console.log(`RAW OK ${name} ${JSON.stringify({keys:Object.keys(remote)})}`);
+}
 const exp=JSON.parse(readFileSync('express-v3.json','utf8'));
 assert.equal(exp.velasource.base_url,root+'/');
 assert.equal(exp.velasource.json_format.results,'results');
