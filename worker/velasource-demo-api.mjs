@@ -67,8 +67,11 @@ const excludeFiles=/(?:^|[.\s_-])(?:trailer|sample|teaser|preview|clip|commentar
 const shortText=x=>typeof x==="string"?x:Array.isArray(x)?x[0]:"";
 const normalized=x=>String(x||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
 function similarity(a,b) {
-  const sa=new Set(normalized(a).split(" ").filter(Boolean));
-  const sb=new Set(normalized(b).split(" ").filter(Boolean));
+  // Catalog titles often append technical encodings (e.g. "Big Buck Bunny 720p H264").
+  // Strip only known quality/codecs, not arbitrary title words or sequel numbers.
+  const strip=x=>normalized(x).split(" ").filter(w=>!/^(?:4k|2160p|1080p|720p|480p|h264|h265|hevc|x264|x265|vp8|vp9|av1|uhd)$/.test(w));
+  const sa=new Set(strip(a));
+  const sb=new Set(strip(b));
   if(!sa.size||!sb.size)return 0;
   let matched=0;for(const word of sa)if(sb.has(word))matched++;
   return matched/Math.max(sa.size,sb.size);
