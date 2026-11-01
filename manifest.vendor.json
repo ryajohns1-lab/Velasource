@@ -1,11 +1,11 @@
 {
-  "name": "VelaSource v3",
-  "description": "Licensed test film adapter; versioned URLs prevent old package-definition caches from hiding results.",
+  "name": "VelaSource v4 · Hosted Express",
+  "description": "Current version: v4 hosted Express package (no GitHub Raw provider-definition requests).",
   "packages": [
     {
-      "name": "VelaSource Express Adapter v3",
-      "description": "New version-specific URL bypasses stale v1/v2 demo definitions; tests the Big Buck Bunny result.",
-      "manifest": "https://raw.githubusercontent.com/ryajohns1-lab/Velasource/main/package-v3.json"
+      "name": "VelaSource Express Adapter v4",
+      "description": "Licensed Big Buck Bunny smoke test.",
+      "manifest": "https://velasource-demo-api.ryajohns1.workers.dev/package-v4.json"
     }
   ]
 }

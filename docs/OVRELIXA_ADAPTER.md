@@ -1,27 +1,29 @@
-# VelaSource → Ovrelixa (Express JSON adapter)
+# VelaSource v4 — Ovrelixa vendor import test
 
-The [Syncler package starter](https://github.com/synclerd/package-starter) is a **format reference**, not a package to install. VelaSource is a separate independent engine. Ovrelixa's restricted Express JSON interpreter does not run downloaded scripts.
+The Ovrelixa app is unchanged. The VelaSource app-import smoke test is hosted at https://velasource-demo-api.ryajohns1.workers.dev.
 
-## Install the smoke test
+## Why the v3 test failed
 
-1. Open **Ovrelixa → Settings → Vendors**.
-2. Remove any older VelaSource demo/adapter package from **Vendors** (the v1 demo deliberately returned an empty list).
-3. Add `https://raw.githubusercontent.com/ryajohns1-lab/Velasource/main/vendor-v3.json`, then **Check vendor URL**, **Import** `VelaSource Express Adapter v3`.
-4. In **Settings → Sources**, select **Vendors** and make sure Premiumize is connected.
-5. To test the provider adapter, search for **Big Buck Bunny (2008)**, not an unrelated movie. Open **Diagnostics** to inspect the provider response.
+The iPhone Diagnostics read `Package manifest: error (Cannot load Express definition)`. This means the manifest imported successfully, but the subsequent provider-definition download failed. Prior v3 definitions were requested from `raw.githubusercontent.com`, which served the file with `text/plain`; this did not prove the exact failure cause, but it exposed an unnecessary host/content-type dependency.
 
-The public smoke-test endpoint is `https://velasource-demo-api.ryajohns1.workers.dev/search?kind=movie&title=Big%20Buck%20Bunny` and health check is `https://velasource-demo-api.ryajohns1.workers.dev/health`. It returns **one** CC BY 3.0 video source for the specifically matched sample title and zero for unrelated titles. No unauthorized sites are scraped. It **does not** mean that the Ovrelixa picker will show a playable source: Ovrelixa independently filters all Vendors candidates to **Premiumize-cached** entries. A regular HTTPS demo MP4 may legitimately yield `1 returned candidate; 0 cached` and no picker rows. Do not bypass that gate.
+**v4 removes that dependency altogether.** The vendor URL and the one-file inline Express definition are served from the same Cloudflare Worker with `Content-Type: application/json` and no-store metadata cache headers.
 
-### Hosted versus standalone
+## Install
 
-Cloudflare hosts a separate **smoke-test adapter only**, not the full Node search engine. The complete VelaSource Node.js source is supplied separately as a project ZIP, and should be uploaded into this repository's root if you want GitHub to contain that implementation. The full engine's `src/server.mjs` exposes `/v1/express/search`, using its provider concurrency, title matching, ranking and caching. Deploy the Node service on a trusted HTTPS host with your authorized provider endpoints before changing the adapter `base_url`.
+1. In **Settings → Vendors**, remove old **VelaSource Express Adapter v3** (and any earlier demo adapters). Do not change the JakedUp or OpenScrapers packages.
+2. Paste `https://velasource-demo-api.ryajohns1.workers.dev/vendor-v4.json` and tap **Check vendor URL**.
+3. Import **VelaSource Express Adapter v4**.
+4. Confirm **Settings → Sources → Vendors**, then search for **Big Buck Bunny (2008)**.
+5. Tap **Look again** and view Diagnostics.
 
-For production, create a **new versioned definition URL** (for example `express-v4.json`) and change its `base_url` to the hosted Node service (and the query path to `v1/express/search`), bump the version numbers in the new definition and package manifests, and remove/re-import the package on testing devices.
+**Expected:** one found candidate from the VelaSource test provider, zero or one displayed depending on Premiumize cache eligibility. The normal HTTPS sample video is not guaranteed to be Premiumize-cached.
 
-**Attribution:** *Big Buck Bunny*, © 2008 Blender Foundation / www.bigbuckbunny.org, [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). Playback URL: https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4
+You may directly inspect `https://velasource-demo-api.ryajohns1.workers.dev/package-v4.json` to see an inline `_manifest` and `velasource` Express definition.
 
-## Why v3 uses new filenames
+## Independent verification
 
-Ovrelixa caches downloaded Express definitions by their exact URL for up to 45 minutes. Its **Look again** action clears only the title-search cache, not the provider-definition cache. The earlier v1 and v2 adapters reused `express.json`, so an already-running app could still search the previous *empty* demo. The new `vendor-v3.json` → `package-v3.json` → `express-v3.json` chain guarantees a different definition URL. **Remove the old VelaSource package and import the v3 vendor URL**, then test Big Buck Bunny. A successful provider result will be reported in Diagnostics as **1 returned candidate** before Premiumize cache filtering. Expect **0 Premiumize cached** for the ordinary CC-licensed HTTPS sample file; it is not a cached debrid link.
+`scripts/smoke-remote.mjs` exercises the exact public vendor → package/definition → search chain via GitHub Actions and asserts one matching licensed result, zero unrelated results, JSON content type and v4 metadata. This does not test an iPhone's network or Premiumize cache status.
 
-If the count remains zero, open **Diagnostics** and inspect the provider's status (empty, error, timeout, etc.), which distinguishes a nonmatching title from an unreachable API.
+The Worker is a read-only demo. It makes no arbitrary origin fetches, receives no debrid credentials and does not bypass Ovrelixa's Premiumize filtering.
+
+Source license for test movie: *Big Buck Bunny*, Blender Foundation (2008), CC BY 3.0.

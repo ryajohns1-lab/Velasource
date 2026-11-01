@@ -1,26 +1,29 @@
 # VelaSource
 
-A standalone movie/episode search engine prototype with a Syncler **Express JSON-compatible adapter for Ovrelixa**. This is independent of Ovrelixa; neither its player nor its private Cloudflare APK delivery was modified.
+Independent provider-search engine prototype and a separately hosted **Ovrelixa Express adapter**. Ovrelixa's installed code, build and private APK delivery have **not** been changed.
 
-## Import into Ovrelixa
+## Current import URL (v4)
 
-Enter this in **Settings → Vendors**:
+Paste this URL in **Ovrelixa → Settings → Vendors**:
 
-`https://raw.githubusercontent.com/ryajohns1-lab/Velasource/main/vendor-v3.json`
+`https://velasource-demo-api.ryajohns1.workers.dev/vendor-v4.json`
 
-Choose **Check vendor URL** and **Import VelaSource Express Adapter v3**. See [test steps and limitations](docs/OVRELIXA_ADAPTER.md).
+Select **Check vendor URL**, then **Import VelaSource Express Adapter v4**. Remove the old v3 package first.
 
-## Current test status
+The **vendor JSON, package manifest, and provider definition** now all come from the same Cloudflare Worker with `application/json` response headers. This avoids the former problem where the iPhone could recognize a package but report `Cannot load Express definition` when fetching a separate GitHub Raw definition.
 
-- **Live hosted adapter:** `https://velasource-demo-api.ryajohns1.workers.dev/health`
-- **Licensed test movie:** Big Buck Bunny (2008), CC BY 3.0. The API returns one candidate for this exact title, zero for other titles.
-- **Vendors cache policy:** Ovrelixa requires Premiumize-cached media. A valid regular HTTPS demo video may appear in Diagnostics but not in the playable source list.
-- **Not yet live:** The standalone Node.js search engine from `VelaSource_Standalone_Prototype_v0.1.0` is not hosted via this worker. Its original source has not yet been uploaded to this GitHub repository; uploading the project ZIP contents to the repository root is a separate step.
+- Live vendor: https://velasource-demo-api.ryajohns1.workers.dev/vendor-v4.json
+- Package/definition (one file): https://velasource-demo-api.ryajohns1.workers.dev/package-v4.json
+- Health: https://velasource-demo-api.ryajohns1.workers.dev/health
+- Licensed sample search: https://velasource-demo-api.ryajohns1.workers.dev/search?kind=movie&title=Big%20Buck%20Bunny
+- Automated external test: [GitHub Actions](https://github.com/ryajohns1-lab/Velasource/actions/workflows/adapter-smoke.yml)
 
-The current worker is deliberately read-only, with no debrid credentials and no arbitrary URL fetching. It is for verifying the Express package manifest and end-to-end import/search connectivity, **not an operational scraper network**.
+The public smoke-test API returns **one candidate** for the Creative Commons film *Big Buck Bunny* (2008) and zero for unrelated titles. Ovrelixa's separate **Premiumize-only** gate may reject the normal HTTPS sample video, so one result in **Diagnostics** and zero playable streams can be expected.
 
-## Source layout
+This is **not** the fully deployed original VelaSource Node search engine. The separate source ZIP contains the full Node.js prototype and needs configuration and hosting for real authorized provider searches. GitHub does not execute Node backends.
 
-The full source ZIP contains `src/`, `config/`, `data/`, `docs/`, `tests/`, `package.json` and `LICENSE`. Its Node 22+ service includes `/v1/express/search` and can host your independently configured authorized providers.
+The [Syncler package starter](https://github.com/synclerd/package-starter) was used only as a description of compatible Express metadata, not as executable code.
 
-The Syncler [package-starter](https://github.com/synclerd/package-starter) was used only to understand the publishing format; its placeholder files are not imported or executed.
+## Source
+
+The worker source is in [worker/velasource-demo-api.mjs](worker/velasource-demo-api.mjs); [scripts/smoke-remote.mjs](scripts/smoke-remote.mjs) tests the deployed API from GitHub Actions. See [documentation](docs/OVRELIXA_ADAPTER.md).
