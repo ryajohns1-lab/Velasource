@@ -46,6 +46,13 @@ console.log(JSON.stringify({archiveStatus:v6Query.status,archiveCount:v6Query.re
 assert.equal(v6Query.status,'ok','Archive live search must respond without a provider error');
 assert.ok(v6Query.results.length>=1,'Expected a licensed Sintel item from Archive');
 assert.ok(v6Query.results.every(x=>/^https:\/\/archive\.org\/download\//.test(x.url)&&/creativecommons\.org\//.test(x.license)),'Only explicitly licensed Archive URLs may be returned');
+for(const [title,year] of [['Big Buck Bunny',2008],['Elephants Dream',2006]]) {
+  const u=origin+'/v6/search?kind=movie&title='+encodeURIComponent(title)+'&year='+year;
+  const data=await readJson(u);
+  assert.equal(data.status,'ok',`Archive error for ${title}`);
+  assert.ok(data.results.length>=1,`Expected at least one licensed Archive movie for ${title}`);
+  console.log(JSON.stringify({archiveFilm:title,accepted:data.results.length,ids:data.results.map(x=>x.archiveId)}));
+}
 const v6Unrelated=await readJson(origin+'/v6/search?kind=episode&title=Sintel&season=1&episode=1');
 assert.equal(v6Unrelated.results.length,0,'Archive must not invent TV episode sources');
 console.log('PASS: VelaSource v6 independently loaded live licensed-film provider');
