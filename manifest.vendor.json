@@ -1,11 +1,10 @@
 {
-  "name": "VelaSource v4 · Hosted Express",
-  "description": "Current version: v4 hosted Express package (no GitHub Raw provider-definition requests).",
+  "name": "VelaSource - Vendor",
+  "description": "JakedUp-compatible v5 hosted Express format; licensed sample test only.",
   "packages": [
     {
-      "name": "VelaSource Express Adapter v4",
-      "description": "Licensed Big Buck Bunny smoke test.",
-      "manifest": "https://velasource-demo-api.ryajohns1.workers.dev/package-v4.json"
+      "manifest": "https://velasource-demo-api.ryajohns1.workers.dev/syncler/express/manifest",
+      "description": "VelaSource v5 Express provider"
     }
   ]
 }

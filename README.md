@@ -1,29 +1,32 @@
 # VelaSource
 
-Independent provider-search engine prototype and a separately hosted **Ovrelixa Express adapter**. Ovrelixa's installed code, build and private APK delivery have **not** been changed.
+Independent provider-search engine prototype and a hosted compatibility-test adapter for Ovrelixa. **Ovrelixa code and app builds are unchanged.**
 
-## Current import URL (v4)
+## Current VelaSource v5 import
 
 Paste this URL in **Ovrelixa → Settings → Vendors**:
 
-`https://velasource-demo-api.ryajohns1.workers.dev/vendor-v4.json`
+`https://velasource-demo-api.ryajohns1.workers.dev/syncler/vendor/`
 
-Select **Check vendor URL**, then **Import VelaSource Express Adapter v4**. Remove the old v3 package first.
+1. Remove **VelaSource Express Adapter v4** (and any earlier VelaSource test packages).
+2. Choose **Check vendor URL** with the v5 URL above.
+3. Import **VelaSource - Express v5**, and check **Settings → Sources → Vendors**.
+4. Search for **Big Buck Bunny (2008)** and view Diagnostics.
 
-The **vendor JSON, package manifest, and provider definition** now all come from the same Cloudflare Worker with `application/json` response headers. This avoids the former problem where the iPhone could recognize a package but report `Cannot load Express definition` when fetching a separate GitHub Raw definition.
+The v5 catalog exactly follows the working JakedUp-style three-stage structure:
 
-- Live vendor: https://velasource-demo-api.ryajohns1.workers.dev/vendor-v4.json
-- Package/definition (one file): https://velasource-demo-api.ryajohns1.workers.dev/package-v4.json
-- Health: https://velasource-demo-api.ryajohns1.workers.dev/health
-- Licensed sample search: https://velasource-demo-api.ryajohns1.workers.dev/search?kind=movie&title=Big%20Buck%20Bunny
-- Automated external test: [GitHub Actions](https://github.com/ryajohns1-lab/Velasource/actions/workflows/adapter-smoke.yml)
+- Vendor: `https://velasource-demo-api.ryajohns1.workers.dev/syncler/vendor/`
+- Legacy Express manifest: `https://velasource-demo-api.ryajohns1.workers.dev/syncler/express/manifest` (fields: name, id, version, classPath, permaUrl, type)
+- Provider rules: `https://velasource-demo-api.ryajohns1.workers.dev/syncler/express`
+- Licensed sample search API: `https://velasource-demo-api.ryajohns1.workers.dev/search?kind=movie&title=Big%20Buck%20Bunny`
+- Health: `https://velasource-demo-api.ryajohns1.workers.dev/health`
 
-The public smoke-test API returns **one candidate** for the Creative Commons film *Big Buck Bunny* (2008) and zero for unrelated titles. Ovrelixa's separate **Premiumize-only** gate may reject the normal HTTPS sample video, so one result in **Diagnostics** and zero playable streams can be expected.
+All endpoints are served from the same Cloudflare Worker as JSON. The [external GitHub Actions smoke test](https://github.com/ryajohns1-lab/Velasource/actions/workflows/adapter-smoke.yml) verifies vendor → legacy manifest → provider definition → test search using the same Accept header as Ovrelixa's restricted provider fetch.
 
-This is **not** the fully deployed original VelaSource Node search engine. The separate source ZIP contains the full Node.js prototype and needs configuration and hosting for real authorized provider searches. GitHub does not execute Node backends.
+**Expected diagnostics:** one returned candidate for the public Creative Commons *Big Buck Bunny* (2008) test. The displayed stream picker can still contain zero items because Ovrelixa only accepts Premiumize-confirmed cached links. This sample is an ordinary HTTPS video, not a Premiumize-cached source.
 
-The [Syncler package starter](https://github.com/synclerd/package-starter) was used only as a description of compatible Express metadata, not as executable code.
+## Independent Node engine
 
-## Source
+This hosted Worker is **a licensed-sample adapter**, not the full standalone Node VelaSource engine. The original VelaSource source ZIP (provided separately) includes provider orchestration, lookup/ranking, and a local Express API. The entire Node source has not yet been uploaded to this repository or deployed. GitHub cannot run the Node server by itself.
 
-The worker source is in [worker/velasource-demo-api.mjs](worker/velasource-demo-api.mjs); [scripts/smoke-remote.mjs](scripts/smoke-remote.mjs) tests the deployed API from GitHub Actions. See [documentation](docs/OVRELIXA_ADAPTER.md).
+Do not confuse a successful vendor import with operational, authorized live-provider configuration. Syncler's [package-starter](https://github.com/synclerd/package-starter) and [JakedUp/Syncler-Packages](https://github.com/JakedUp/Syncler-Packages) were used as format references, not copied as executed code.

@@ -1,29 +1,23 @@
-# VelaSource v4 — Ovrelixa vendor import test
+# VelaSource v5 — JakedUp-compatible Express package
 
-The Ovrelixa app is unchanged. The VelaSource app-import smoke test is hosted at https://velasource-demo-api.ryajohns1.workers.dev.
+**No Ovrelixa changes.** This adapter is independently deployed in Cloudflare.
 
-## Why the v3 test failed
+## Background
 
-The iPhone Diagnostics read `Package manifest: error (Cannot load Express definition)`. This means the manifest imported successfully, but the subsequent provider-definition download failed. Prior v3 definitions were requested from `raw.githubusercontent.com`, which served the file with `text/plain`; this did not prove the exact failure cause, but it exposed an unnecessary host/content-type dependency.
+The iPhone imported v3 and v4 but reported `Package manifest: error (Cannot load Express definition)`. That error comes from Ovrelixa attempting to retrieve and parse the provider definition, *before* searching and before Premiumize cache checks.
 
-**v4 removes that dependency altogether.** The vendor URL and the one-file inline Express definition are served from the same Cloudflare Worker with `Content-Type: application/json` and no-store metadata cache headers.
+The v3 definition used GitHub Raw and the v4 definition used a one-file inline `_manifest` shortcut. The v5 experiment follows the observed live JakedUp endpoints and metadata fields precisely:
 
-## Install
+| Stage | JakedUp | VelaSource v5 |
+|---|---|---|
+| Vendor catalog | `/syncler/vendor` | `https://velasource-demo-api.ryajohns1.workers.dev/syncler/vendor/` |
+| Express manifest | `/syncler/express/manifest` | `https://velasource-demo-api.ryajohns1.workers.dev/syncler/express/manifest` |
+| Provider definition | `/syncler/express` | `https://velasource-demo-api.ryajohns1.workers.dev/syncler/express` |
 
-1. In **Settings → Vendors**, remove old **VelaSource Express Adapter v3** (and any earlier demo adapters). Do not change the JakedUp or OpenScrapers packages.
-2. Paste `https://velasource-demo-api.ryajohns1.workers.dev/vendor-v4.json` and tap **Check vendor URL**.
-3. Import **VelaSource Express Adapter v4**.
-4. Confirm **Settings → Sources → Vendors**, then search for **Big Buck Bunny (2008)**.
-5. Tap **Look again** and view Diagnostics.
+VelaSource's Express manifest includes `name`, `id`, `version:5`, `classPath:""`, `permaUrl`, and `type:"express"`. Its `permaUrl` serves the `_manifest` + `velasource` rule object. All URLs are HTTPS and hosted on the same Cloudflare origin.
 
-**Expected:** one found candidate from the VelaSource test provider, zero or one displayed depending on Premiumize cache eligibility. The normal HTTPS sample video is not guaranteed to be Premiumize-cached.
+## Test
 
-You may directly inspect `https://velasource-demo-api.ryajohns1.workers.dev/package-v4.json` to see an inline `_manifest` and `velasource` Express definition.
+Remove the old v4 adapter, install `https://velasource-demo-api.ryajohns1.workers.dev/syncler/vendor/`, select Vendors and search for *Big Buck Bunny (2008)*. Open Diagnostics. If there is one `found` candidate but zero cached, the adapter is working and the remaining behavior is Ovrelixa's Premiumize-only filter. If the same definition error remains, the next useful evidence is the specific iOS fetch/HTTP failure; do not bypass security restrictions or change Ovrelixa solely for this smoke test.
 
-## Independent verification
-
-`scripts/smoke-remote.mjs` exercises the exact public vendor → package/definition → search chain via GitHub Actions and asserts one matching licensed result, zero unrelated results, JSON content type and v4 metadata. This does not test an iPhone's network or Premiumize cache status.
-
-The Worker is a read-only demo. It makes no arbitrary origin fetches, receives no debrid credentials and does not bypass Ovrelixa's Premiumize filtering.
-
-Source license for test movie: *Big Buck Bunny*, Blender Foundation (2008), CC BY 3.0.
+[View independent API test](https://github.com/ryajohns1-lab/Velasource/actions/runs/41332037445). Only the freely licensed *Big Buck Bunny* (2008; © Blender Foundation, CC BY 3.0) is returned.
