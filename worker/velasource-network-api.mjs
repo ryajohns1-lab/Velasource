@@ -201,7 +201,11 @@ async function networkSearch(url,env){
         kind==="episode"&&(!Number.isInteger(season)||season<0||season>99||
           !Number.isInteger(episode)||episode<1||episode>999)))
     return send({error:"Invalid title, year or episode",results:[]},400);
-  const key=[kind,canon(title),year,season,episode].join("|");
+  // Partition cache by deployment-configured feed. Do not reuse authorized
+  // results if a deployment changes or removes its feed/allowed media hosts.
+  const config=authorizedConfig(env);
+  const key=[kind,canon(title),year,season,episode,
+    config?.url||"unconfigured",config?.allowed.join(",")||""].join("|");
   const prev=cache.get(key);
   if(prev&&Date.now()-prev.at<TTL)return send({...prev.response,cacheHit:true});
   const jobs=[];
