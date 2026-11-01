@@ -95,8 +95,11 @@ async function archive(title,year){
       const files=(Array.isArray(meta.files)?meta.files:[])
         .filter(f=>typeof f.name==="string"&&f.name.length<220&&movieExtension.test(f.name)
           &&!badParts.test(f.name)&&f.private!=="true");
-      files.sort((a,b)=>(Number(b.source==="original")*10+Number(/\.mp4$/i.test(b.name))*4)-
-         (Number(a.source==="original")*10+Number(/\.mp4$/i.test(a.name))*4));
+      // Prefer broadly playable MP4 to an original MKV/WebM when both exist.
+      const preference=f=>(/\.mp4$/i.test(f.name)?40:/\.m4v$/i.test(f.name)?35:
+        /\.webm$/i.test(f.name)?20:/\.mkv$/i.test(f.name)?5:0)+
+        Number(f.source==="original")*4+Number(/1080p|2160p|4k/i.test(f.name))*3;
+      files.sort((a,b)=>preference(b)-preference(a));
       const file=files[0];if(!file)return null;
       return {title:asText(meta.metadata.title),year:Number(asText(doc.year))||undefined,
         url:"https://archive.org/download/"+encodeURIComponent(doc.identifier)+"/"+file.name.split("/").map(encodeURIComponent).join("/"),
@@ -132,7 +135,10 @@ async function commons(title,year){
 }
 // Owner feed: explicitly configured deployment-time URL and both feed host and media host allowlists.
 // Feed format: {"items":[{"kind":"movie"|"episode","title":"...","year":2008,
-//   "season":1,"episode":2,"url":"https://approved-host/file.mp4","license":"https://creativecommons.org/licenses/by/...", "filename":"..."}]}
+//   "season":1,"episode":2,"url":"https://approved-host/file.mp4",
+//   "license":"https://creativecommons.org/licenses/by/...", "filename":"..."}]}
+// For owner-controlled, commercially licensed media, use "rightsGranted":true
+// instead of a CC URL; the feed and media domains must still be on deployment-time allowlists.
 // No arbitrary input URLs are fetched; absent env binding leaves this provider disabled.
 function authorizedConfig(env){
   if(!env?.AUTHORIZED_FEED_URL||!env?.AUTHORIZED_FEED_HOST||!env?.AUTHORIZED_MEDIA_HOSTS)return null;
@@ -148,13 +154,14 @@ async function authorized(title,year,kind,season,episode,env){
   return items.slice(0,300).filter(item=>item.kind===kind
     && relevant(title,asText(item.title),item.year,year)
     && (kind!=="episode"||(Number(item.season)===season&&Number(item.episode)===episode))
-    && rights(item.license)&&validateMediaUrl(item.url,cfg.allowed)
+    && (rights(item.license)||item.rightsGranted===true)&&validateMediaUrl(item.url,cfg.allowed)
     && typeof item.url==="string"&&item.url.length<2048)
     .slice(0,15).map(item=>({title:asText(item.title),year:Number(item.year)||undefined,
       season:kind==="episode"?season:undefined,episode:kind==="episode"?episode:undefined,
       episodeVerified:kind==="episode",url:item.url,filename:asText(item.filename)||asText(item.title),
       sizeBytes:Number(item.sizeBytes)||undefined,provider:"Authorized Owner Feed",
-      license:asText(item.license),originId:"owner:"+item.url}));
+      license:rights(item.license)?asText(item.license):"Owner-authorized",
+      originId:"owner:"+item.url}));
 }
 const providerKeys=["Internet Archive","Wikimedia Commons","Authorized Owner Feed"];
 function runProvider(name,task){
