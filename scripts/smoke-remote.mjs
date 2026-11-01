@@ -31,6 +31,24 @@ assert.equal(classicDefinition.velasource.json_format.url,'url');
 const classicFilm=await readJson(origin+'/search?kind=movie&title=Big%20Buck%20Bunny');
 assert.equal(classicFilm.results.length,1);
 console.log('PASS: JakedUp-style v5 vendor -> Express manifest -> Express provider definition -> licensed search');
+// VelaSource v6: genuinely searches explicitly licensed films via the Internet Archive.
+const v6Vendor=await readJson(origin+'/syncler/v6/vendor/');
+assert.equal(v6Vendor.packages.length,1);
+const v6Manifest=await readJson(v6Vendor.packages[0].manifest);
+assert.equal(v6Manifest.version,6);
+assert.equal(v6Manifest.type,'express');
+const v6Rules=await readJson(v6Manifest.permaUrl);
+assert.equal(v6Rules._manifest.version,6);
+assert.equal(v6Rules.archive.response_type,'json');
+const v6Query=await readJson(origin+'/v6/search?kind=movie&title=Sintel&year=2010');
+console.log(JSON.stringify({archiveStatus:v6Query.status,archiveCount:v6Query.results.length,archiveChecked:v6Query.checked,
+  sample:v6Query.results.slice(0,2).map(x=>({title:x.title,archiveId:x.archiveId,license:x.license}))}));
+assert.equal(v6Query.status,'ok','Archive live search must respond without a provider error');
+assert.ok(v6Query.results.length>=1,'Expected a licensed Sintel item from Archive');
+assert.ok(v6Query.results.every(x=>/^https:\/\/archive\.org\/download\//.test(x.url)&&/creativecommons\.org\//.test(x.license)),'Only explicitly licensed Archive URLs may be returned');
+const v6Unrelated=await readJson(origin+'/v6/search?kind=episode&title=Sintel&season=1&episode=1');
+assert.equal(v6Unrelated.results.length,0,'Archive must not invent TV episode sources');
+console.log('PASS: VelaSource v6 independently loaded live licensed-film provider');
 const health=await readJson(origin+'/health');
 assert.equal(health.ok,true);
 assert.equal(health.version,4);
