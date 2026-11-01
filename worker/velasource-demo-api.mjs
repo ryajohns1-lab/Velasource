@@ -64,7 +64,7 @@ const V6_DEFINITION = {_manifest:{name:"VelaSource Archive v6",id:"community.vel
 const rightsPattern=/^https?:\/\/(?:www\.)?creativecommons\.org\/(?:licenses\/(?:by(?:-sa|-nc(?:-sa|-nd)?|-nd)?|zero)\/|publicdomain\/(?:zero|mark)\/)/i;
 const movieFiles=/\.(?:mp4|m4v|webm|mkv)$/i;
 const excludeFiles=/(?:^|[.\s_-])(?:trailer|sample|teaser|preview|clip|commentary)(?:[.\s_-]|$)/i;
-const shortText=x=>typeof x==="string"?x:Array.isArray(x)?x[0]:"";
+const shortText=x=>(typeof x==="string"||typeof x==="number")?String(x):Array.isArray(x)?String(x[0]??""):"";
 const normalized=x=>String(x||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
 function similarity(a,b) {
   // Catalog titles often append technical encodings (e.g. "Big Buck Bunny 720p H264").
