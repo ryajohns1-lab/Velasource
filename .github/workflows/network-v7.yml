@@ -1,0 +1,23 @@
+name: VelaSource v7 provider network integration
+
+on:
+  push:
+    paths:
+      - worker/velasource-network-api.mjs
+      - scripts/check-network.mjs
+      - .github/workflows/network-v7.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  network:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax check the standalone Worker
+        run: node --check worker/velasource-network-api.mjs
+      - name: Exercise hosted network, strict rights checks and provider isolation
+        run: node scripts/check-network.mjs
