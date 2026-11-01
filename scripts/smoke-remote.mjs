@@ -1,34 +1,41 @@
 #!/usr/bin/env node
-// Test the *public* VelaSource API from an independent GitHub runner,
-// not just its deployed metadata. Does not query third-party scrapers.
+// External check of the exact VelaSource vendor -> one-file Express definition -> search chain.
+// No Ovrelixa app code, debrid credentials or third-party index queries are involved.
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-const root='https://velasource-demo-api.ryajohns1.workers.dev';
-async function get(url) {
-  const r=await fetch(url,{signal:AbortSignal.timeout(15000),headers:{accept:'application/json'}});
-  assert.equal(r.status,200,`HTTP ${r.status} for ${url}`);
-  assert.match(r.headers.get('content-type')??'',/application\/json/);
-  return r.json();
+const origin='https://velasource-demo-api.ryajohns1.workers.dev';
+async function readJson(url, expectedType = true) {
+  const result=await fetch(url,{signal:AbortSignal.timeout(15000),headers:{accept:'application/json,text/plain;q=0.9'}});
+  const body=await result.text();
+  assert.equal(result.status,200,`GET ${url}: HTTP ${result.status}: ${body.slice(0,300)}`);
+  if(expectedType) assert.match(result.headers.get('content-type')??'',/application\/json/);
+  let parsed;
+  try { parsed=JSON.parse(body); } catch(e) { throw new Error(`Invalid JSON at ${url}: ${body.slice(0,300)}`); }
+  return parsed;
 }
-const health=await get(root+'/health');
+const health=await readJson(origin+'/health');
 assert.equal(health.ok,true);
-const matching=await get(root+'/search?kind=movie&title=Big%20Buck%20Bunny&year=2008&imdbId=tt1254207');
-assert.equal(matching.count,1,`Expected one licensed result; got ${JSON.stringify(matching)}`);
-assert.equal(matching.results.length,1);
-assert.match(matching.results[0].title,/Big Buck Bunny/i);
-assert.match(matching.results[0].url,/^https:\/\//);
-const elsewhere=await get(root+'/search?kind=movie&title=Wildwood&year=2026');
-assert.equal(elsewhere.count,0,`Test provider must not give unrelated titles: ${JSON.stringify(elsewhere)}`);
-const raw='https://raw.githubusercontent.com/ryajohns1-lab/Velasource/main';
-for (const name of ['vendor-v3.json','package-v3.json','express-v3.json']) {
-  const remote=await get(raw+'/'+name);
-  const local=JSON.parse(readFileSync(name,'utf8'));
-  assert.deepEqual(remote,local,`Published GitHub JSON differs from local for ${name}`);
-  console.log(`RAW OK ${name} ${JSON.stringify({keys:Object.keys(remote)})}`);
-}
-const exp=JSON.parse(readFileSync('express-v3.json','utf8'));
-assert.equal(exp.velasource.base_url,root+'/');
-assert.equal(exp.velasource.json_format.results,'results');
-assert.equal(exp.velasource.json_format.title,'title');
-assert.equal(exp.velasource.json_format.url,'url');
-console.log(JSON.stringify({healthy:true,matchingResults:matching.count,unrelatedResults:elsewhere.count,source:root,packageVersion:exp._manifest.version},null,2));
+assert.equal(health.version,4);
+const vendor=await readJson(origin+'/vendor-v4.json');
+assert.equal(vendor.packages.length,1);
+const pUrl=vendor.packages[0].manifest;
+assert.equal(pUrl,origin+'/package-v4.json');
+const pkg=await readJson(pUrl);
+assert.equal(pkg._manifest.version,4);
+assert.equal(pkg.velasource.base_url,origin+'/');
+assert.equal(pkg.velasource.response_type,'json');
+assert.equal(pkg.velasource.json_format.results,'results');
+assert.equal(pkg.velasource.json_format.title,'title');
+assert.equal(pkg.velasource.json_format.url,'url');
+const search=new URL(pkg.velasource.movie.query.split('?')[0],pkg.velasource.base_url);
+search.searchParams.set('kind','movie');
+search.searchParams.set('title','Big Buck Bunny');
+search.searchParams.set('year','2008');
+search.searchParams.set('imdbId','tt1254207');
+const hit=await readJson(search.toString());
+assert.equal(hit.count,1,`Expected one demo candidate; got: ${JSON.stringify(hit)}`);
+assert.match(hit.results[0].title,/Big Buck Bunny/i);
+assert.match(hit.results[0].url,/^https:\/\//);
+const miss=await readJson(origin+'/search?kind=movie&title=Wildwood&year=2026');
+assert.equal(miss.count,0);
+console.log('PASS: hosted vendor -> inline Express manifest -> live search -> licensed candidate');
+console.log(JSON.stringify({vendor:origin+'/vendor-v4.json',package:pUrl,candidates:hit.count,unrelated:miss.count,version:pkg._manifest.version},null,2));
