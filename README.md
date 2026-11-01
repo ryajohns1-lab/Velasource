@@ -1,21 +1,26 @@
 # VelaSource
 
-VelaSource is a separate standalone source-search engine prototype, **not part of Ovrelixa**. The complete Node.js prototype is available separately in the owner's `VelaSource_Standalone_Prototype_v0.1.0` archive and has **not been deployed here yet**.
+A standalone movie/episode search engine prototype with a Syncler **Express JSON-compatible adapter for Ovrelixa**. This is independent of Ovrelixa; neither its player nor its private Cloudflare APK delivery was modified.
 
-## Ovrelixa Vendors — import-only test
+## Import into Ovrelixa
 
-To test that Ovrelixa can discover and import a VelaSource vendor, enter:
+Enter this in **Settings → Vendors**:
 
-```
-https://raw.githubusercontent.com/ryajohns1-lab/Velasource/main/manifest.vendor.json
-```
+`https://raw.githubusercontent.com/ryajohns1-lab/Velasource/main/manifest.vendor.json`
 
-Navigate to **Ovrelixa → Settings → Vendors**, paste the URL, choose **Check vendor URL**, then **Import** the listed Express adapter.
+Choose **Check vendor URL** and **Import VelaSource Express Adapter**. See [test steps and limitations](docs/OVRELIXA_ADAPTER.md).
 
-**This is an import compatibility demo, not a live scraper.** The demo provider deliberately returns an empty source list. It does not query any indexes, produce playable files, access Premiumize, or start the VelaSource Node server. GitHub hosts the JSON metadata but does not execute the Node backend.
+## Current test status
 
-## Where to upload the complete standalone source
+- **Live hosted adapter:** `https://velasource-demo-api.ryajohns1.workers.dev/health`
+- **Licensed test movie:** Big Buck Bunny (2008), CC BY 3.0. The API returns one candidate for this exact title, zero for other titles.
+- **Vendors cache policy:** Ovrelixa requires Premiumize-cached media. A valid regular HTTPS demo video may appear in Diagnostics but not in the playable source list.
+- **Not yet live:** The standalone Node.js search engine from `VelaSource_Standalone_Prototype_v0.1.0` is not hosted via this worker. Its original source has not yet been uploaded to this GitHub repository; uploading the project ZIP contents to the repository root is a separate step.
 
-Extract the original ZIP and copy its **contents**, not the enclosing `VelaSource/` directory, to this repo root. The intended layout includes `src/`, `config/`, `data/`, `docs/`, `tests/`, `package.json`, `README.md`, and `LICENSE`. Preserve the `manifest.vendor.json`, `manifest.package.json`, and `express.json` demo files if you still want the test import URL.
+The current worker is deliberately read-only, with no debrid credentials and no arbitrary URL fetching. It is for verifying the Express package manifest and end-to-end import/search connectivity, **not an operational scraper network**.
 
-When real, authorized providers are configured, deploy the Node service behind HTTPS with authentication and rate limiting, then build a compatible live adapter for Ovrelixa's limited Express JSON source engine or explicitly add support for the VelaSource API. A raw GitHub URL alone is not a backend.
+## Source layout
+
+The full source ZIP contains `src/`, `config/`, `data/`, `docs/`, `tests/`, `package.json` and `LICENSE`. Its Node 22+ service includes `/v1/express/search` and can host your independently configured authorized providers.
+
+The Syncler [package-starter](https://github.com/synclerd/package-starter) was used only to understand the publishing format; its placeholder files are not imported or executed.

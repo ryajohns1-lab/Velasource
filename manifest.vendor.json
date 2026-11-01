@@ -1,10 +1,10 @@
 {
-  "name": "VelaSource (Prototype Test)",
-  "description": "Import-only test catalog. VelaSource standalone server is not hosted; no real provider searches are enabled.",
+  "name": "VelaSource",
+  "description": "Independent VelaSource search engine. Express adapter test: one CC BY 3.0 film; full source engine is separate.",
   "packages": [
     {
-      "name": "VelaSource Demo Express Adapter",
-      "description": "Tests Ovrelixa vendor/package import; returns zero live sources.",
+      "name": "VelaSource Express Adapter",
+      "description": "Search bridge for Ovrelixa Vendors. Licensed Big Buck Bunny smoke test; no other live providers yet.",
       "manifest": "https://raw.githubusercontent.com/ryajohns1-lab/Velasource/main/manifest.package.json"
     }
   ]
