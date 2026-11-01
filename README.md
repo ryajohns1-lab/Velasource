@@ -1,44 +1,47 @@
 # VelaSource
 
-Independent source-search engine and hosted **Ovrelixa Express adapter**. VelaSource is separate from the Ovrelixa movie app: no app source code, APK publishing, or authentication settings were modified.
+Independent provider-search service for Ovrelixa's existing Syncler-compatible Express importer. **Ovrelixa itself is unchanged**; this service runs separately on Cloudflare Workers.
 
-## Current test package — VelaSource v6 (licensed movie discovery)
+## New: VelaSource v7 provider network
 
-Use this address in **Ovrelixa → Settings → Vendors**:
+Paste the following into **Ovrelixa → Settings → Vendors**, tap **Check vendor URL**, and import **VelaSource Network — Express v7**.
 
-`https://velasource-demo-api.ryajohns1.workers.dev/syncler/v6/vendor/`
+`https://velasource-network-api.ryajohns1.workers.dev/syncler/v7/vendor/`
 
-Choose **Check vendor URL** and import **VelaSource — Archive Express v6**. First remove the old v5 demonstration package from Vendors; the new package must be explicitly imported. Leave your other vendors unchanged.
+v7 runs on a **separate Cloudflare Worker** to preserve the working v6 integration:
 
-This version goes beyond the static Big Buck Bunny demo. It searches the **Internet Archive's movie catalog**, inspects matching records for an explicit Creative Commons/public-domain license, checks title and year, then retrieves item metadata to select a movie file. It will not fabricate TV episode matches or search unlicensed catalog items. License claims are metadata supplied to the Archive; verify rights independently if planning distribution or reuse.
+| Source | Live | Media | Notes |
+|---|---|---|---|
+| Internet Archive | Yes | Movies | Searches license-labelled titles and verifies metadata/video files |
+| Wikimedia Commons | Yes | Movies | Uses MediaWiki API and per-file license metadata |
+| Authorized Owner Feed | Not configured | Movies and TV episodes | Owner-controlled allowlisted HTTPS feed, with exact season/episode matching |
 
-The adapter uses the same three-stage format verified from JakedUp's public vendor package:
-- Vendor: `https://velasource-demo-api.ryajohns1.workers.dev/syncler/v6/vendor/`
-- Express manifest: `https://velasource-demo-api.ryajohns1.workers.dev/syncler/v6/manifest`
-- Provider definition: `https://velasource-demo-api.ryajohns1.workers.dev/syncler/v6/express`
-- Live public catalog search: `https://velasource-demo-api.ryajohns1.workers.dev/v6/search?kind=movie&title=Sintel&year=2010`
-- Independent external [GitHub Actions test](https://github.com/ryajohns1-lab/Velasource/actions/runs/41333003683)
+Both live catalog searches execute concurrently, then results are scored against title/year, filtered for license metadata and actual media files, deduplicated, and cached. Each provider has separate timeouts and failure isolation. The licensed-film sources are **not a broad commercial movie/TV index**.
 
-### Verified external tests
+**Test titles:** *Sintel (2010)*, *Big Buck Bunny (2008)*, and *Elephants Dream (2006)*. On a successful *Sintel* network test, Internet Archive returned three candidates and Wikimedia Commons returned one. See [v7 end-to-end tests](https://github.com/ryajohns1-lab/Velasource/actions/workflows/network-v7.yml).
 
-After correcting a quality-label matching issue and numeric-year parsing, an independent GitHub runner confirmed live, license-labelled candidates:
+### Crucial distinction: candidate results vs. playable sources
 
-| Licensed film | Archive candidates returned |
-|---|---:|
-| *Sintel* (2010) | 3 |
-| *Big Buck Bunny* (2008) | 3 |
-| *Elephants Dream* (2006) | 3 |
+Ovrelixa accepts only **Premiumize-confirmed cached sources** from Vendors. VelaSource searches public, license-labelled media and returns candidate HTTPS files; **the source picker may still be empty** if Premiumize doesn't report them as cached. No changes were made to that gate and VelaSource does not bypass it. Provider reports from v7 tell you which upstream source responded successfully.
 
-These are genuine catalog items and metadata-resolved files, **not guaranteed playable links in Ovrelixa**: Ovrelixa only offers **Premiumize-confirmed cached sources**, and ordinary Internet Archive HTTPS videos may show *N returned candidates / 0 Premiumize cached*. That is intentional and is not a vendor-import failure.
+### Live endpoints
 
-### Older tested package
+- Vendor catalog: `https://velasource-network-api.ryajohns1.workers.dev/syncler/v7/vendor/`
+- Express package manifest: `https://velasource-network-api.ryajohns1.workers.dev/syncler/v7/manifest`
+- Provider definition: `https://velasource-network-api.ryajohns1.workers.dev/syncler/v7/express`
+- Movie search API: `https://velasource-network-api.ryajohns1.workers.dev/v7/search?kind=movie&title=Sintel&year=2010`
+- Provider health: `https://velasource-network-api.ryajohns1.workers.dev/v7/health`
 
-The v5 JakedUp-format, one-film compatibility test is still available at `https://velasource-demo-api.ryajohns1.workers.dev/syncler/vendor/`. Leave it installed if you need to compare the previous test.
+Every manifest endpoint supports both URL forms, with and without a trailing slash.
 
-## Standalone VelaSource Node engine (v0.3.0)
+## Adding authorized sources and series
 
-The separately supplied ZIP contains the original Node.js engine, a new `src/providers/internet-archive.mjs` provider, owner-configured remote-JSON provider support, metadata matching, parallel search, TTL caches and provider health/circuit breakers. The standalone package passes **21 local automated tests**. The full Node engine **is not deployed** by this Worker, which contains a compact independent implementation of the licensed Archive connector; GitHub only contains this Worker and its integration tests until the source ZIP is uploaded here.
+See [Provider network documentation](docs/PROVIDER_NETWORK.md) and [the example authorized feed](config/authorized-feed.example.json). The feed connector is disabled unless `AUTHORIZED_FEED_URL`, `AUTHORIZED_FEED_HOST`, and `AUTHORIZED_MEDIA_HOSTS` are supplied on the Worker deployment. Its tests verify title/year, season and episode, HTTPS-only URLs, license/owner-authorization metadata and allowed hosts. Do **not** configure private commercial media URLs on a publicly accessible Worker without introducing an access-control layer.
 
-The standalone engine needs Node 22+, configuration, and a suitable Node-capable host to run independently. The Worker is sufficient for testing the licensed archive provider via Ovrelixa.
+## Existing versions
 
-All v6 provider traffic is read-only and does not receive Premiumize credentials, scrape arbitrary websites, or bypass Ovrelixa source filtering. The [Syncler starter](https://github.com/synclerd/package-starter) and [JakedUp's package](https://github.com/JakedUp/Syncler-Packages) were format references only.
+The proven v6 Archive-only vendor remains available at `https://velasource-demo-api.ryajohns1.workers.dev/syncler/v6/vendor/`. The v5 single-film compatibility test also remains on that old Worker. Neither was replaced by v7.
+
+The separately supplied v0.3 Node ZIP remains an independent full-engine prototype and **has not been uploaded to this repository or automatically deployed**. The deployed v7 Worker is the maintained, independently testable network implementation.
+
+The [Syncler package-starter](https://github.com/synclerd/package-starter) and [JakedUp vendor manifest](https://jakedup.com/syncler/vendor) were used as file-format references only. No third-party scraper packages are bundled or executed here.

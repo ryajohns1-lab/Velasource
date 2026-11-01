@@ -1,10 +1,10 @@
 {
-  "name": "VelaSource v6 — Licensed Archive",
-  "description": "Current catalog: independent Internet Archive movie search with explicit license checks.",
+  "name": "VelaSource v7 — Provider Network",
+  "description": "Parallel license-labelled Archive and Wikimedia searches, plus optional authorized-owner feed.",
   "packages": [
     {
-      "manifest": "https://velasource-demo-api.ryajohns1.workers.dev/syncler/v6/manifest",
-      "description": "VelaSource Archive Express v6 (licensed movies)"
+      "manifest": "https://velasource-network-api.ryajohns1.workers.dev/syncler/v7/manifest",
+      "description": "VelaSource Network Express v7"
     }
   ]
 }
