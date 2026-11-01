@@ -1,0 +1,25 @@
+{
+  "_manifest": {
+    "name": "VelaSource Demo Express Adapter",
+    "id": "community.velasource.demo",
+    "version": 1
+  },
+  "velasource_demo": {
+    "name": "VelaSource Demo (no live sources)",
+    "enabled": true,
+    "base_url": "https://raw.githubusercontent.com/ryajohns1-lab/Velasource/main/",
+    "response_type": "json",
+    "movie": {
+      "query": "data/demo-empty.json",
+      "keywords": "{title}"
+    },
+    "episode": {
+      "query": "data/demo-empty.json",
+      "keywords": "{title}"
+    },
+    "json_format": {
+      "title": "releaseName",
+      "url": "url"
+    }
+  }
+}
