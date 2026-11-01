@@ -27,6 +27,25 @@ const VENDOR = {
   description:"Licensed smoke-test adapter. Metadata and provider rules served together from Cloudflare.",
   packages:[{name:"VelaSource Express Adapter v4",description:"Hosted one-file Express provider; test only with Big Buck Bunny.",manifest:ORIGIN+"/package-v4.json"}],
 };
+// JakedUp-style vendor -> legacy manifest -> Express provider definition.
+const V5_VENDOR = {
+  name:"VelaSource - Vendor",
+  description:"VelaSource independent source engine; licensed-sample compatibility check",
+  packages:[{manifest:ORIGIN+"/syncler/express/manifest",
+    description:"VelaSource Express v5 - licensed sample search"}]
+};
+const V5_MANIFEST = {
+  name:"VelaSource - Express v5",
+  id:"community.velasource.express.v5",
+  version:5,
+  classPath:"",
+  permaUrl:ORIGIN+"/syncler/express",
+  type:"express"
+};
+const V5_DEFINITION = {
+  _manifest:{name:"VelaSource Express v5",id:"community.velasource.express.v5",version:5},
+  velasource:{...RULE,name:"VelaSource v5 (licensed test)"}
+};
 function sendJson(data,status=200,cache="no-store"){
   return new Response(JSON.stringify(data),{status,headers:{
     "content-type":"application/json; charset=utf-8",
@@ -43,6 +62,9 @@ export default {
     if(url.pathname==="/health")return sendJson({ok:true,service:"VelaSource Express smoke test",version:4,providerCount:1,mode:"licensed-sample"});
     if(url.pathname==="/vendor-v4.json")return sendJson(VENDOR);
     if(url.pathname==="/package-v4.json")return sendJson(PACKAGE);
+    if(url.pathname==="/syncler/vendor" || url.pathname==="/syncler/vendor/")return sendJson(V5_VENDOR);
+    if(url.pathname==="/syncler/express/manifest" || url.pathname==="/syncler/express/manifest/")return sendJson(V5_MANIFEST);
+    if(url.pathname==="/syncler/express" || url.pathname==="/syncler/express/")return sendJson(V5_DEFINITION);
     if(url.pathname==="/search" || url.pathname==="/v1/express/search"){
       const kind=url.searchParams.get("kind")||"movie";
       const title=normalize(url.searchParams.get("title")||"");
